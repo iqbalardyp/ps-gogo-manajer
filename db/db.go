@@ -21,7 +21,7 @@ func Connect(ctx context.Context, dbUrl string) (*Postgres, error) {
 
 	pgOnce.Do(func() {
 		pool, connErr := pgxpool.New(ctx, dbUrl)
-		if err != nil {
+		if connErr != nil {
 			err = connErr
 			return
 		}
