@@ -5,6 +5,3 @@ DROP TABLE IF EXISTS users CASCADE;
 
 -- DROP ENUM
 DROP TYPE IF EXISTS enum_gender CASCADE;
-
--- Drop trigger function
-DROP FUNCTION IF EXISTS trigger_set_timestamp() CASCADE;
