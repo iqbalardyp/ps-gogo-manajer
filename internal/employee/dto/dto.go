@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/jackc/pgx/v5/pgtype"
+
 type Gender string
 
 const (
@@ -15,13 +17,14 @@ type Employee struct {
 	EmployeeImageUri string `json:"employeeImageUri"`
 }
 
+// TODO:
 type GetEmployeeParams struct {
-	Limit          int    `query:"limit" validate:"number,gte=0"`
-	Offset         int    `query:"offset" validate:"number,gte=0"`
-	IdentityNumber string `query:"identityNumber"`
-	Name           string `query:"name"`
-	Gender         Gender `query:"gender" validate:"oneof=male female"`
-	DepartmentId   string `query:"departmentId" validate:"number"`
+	Limit          int
+	Offset         int
+	Gender         pgtype.Text
+	IdentityNumber pgtype.Text `query:"identityNumber" validate:"omitempty"`
+	Name           pgtype.Text `query:"name" validate:"omitempty"`
+	DepartmentId   *int
 }
 
 type CreateEmployeePayload struct {
@@ -29,7 +32,7 @@ type CreateEmployeePayload struct {
 	Name             string `json:"name" validate:"required,min=4,max=33"`
 	Gender           Gender `json:"gender" validate:"required,oneof=male female"`
 	DepartmentId     string `json:"departmentId" validate:"required,number"` // Bisa lgsg int/bigint ga ya?
-	EmployeeImageUri string `json:"employeeImageUri" validate:"required,uri"`
+	EmployeeImageUri string `json:"employeeImageUri" validate:"omitempty,required,uri"`
 }
 
 type PatchEmployeePayload struct {

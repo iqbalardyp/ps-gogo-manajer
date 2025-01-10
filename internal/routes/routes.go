@@ -12,10 +12,28 @@ type RouteConfig struct {
 }
 
 func (r *RouteConfig) SetupRoutes() {
-	r.SetupEmployeeRoute()
+	// r.setupPublicRoutes()
+	r.setupAuthRoutes()
 }
 
-func (r *RouteConfig) SetupEmployeeRoute() {
-	employee := r.App.Group("/employee")
-	employee.GET("/:identityNumber", r.EmployeeHandler.GetEmployeeByIdentityNumber)
+func (r *RouteConfig) setupPublicRoutes() {
+	// TODO: add public routes
+	// auth := r.App.Group("/auth")
+}
+func (r *RouteConfig) setupAuthRoutes() {
+	v1 := r.App.Group("/v1")
+
+	// TODO: use echo-jwt
+	// v1.Use(echojwt.WithConfig(echojwt.Config{
+	// 	SigningKey:             []byte("secret"),
+	// }))
+	r.setupEmployeeRoute(v1)
+}
+
+func (r *RouteConfig) setupEmployeeRoute(api *echo.Group) {
+	employee := api.Group("/employee")
+	employee.GET("", r.EmployeeHandler.GetListEmployee)
+	employee.POST("", r.EmployeeHandler.CreateEmployee)
+	employee.PUT("/:identityNumber", r.EmployeeHandler.UpdateEmployee)
+	employee.DELETE("/:identityNumber", r.EmployeeHandler.DeleteEmployee)
 }
