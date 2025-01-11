@@ -37,7 +37,7 @@ const (
 		AND (NULLIF(@name, '') is NULL OR name ILIKE '%' || NULLIF(@name, '') || '%' )
 	OFFSET @offset
 	LIMIT @limit;`
-	
+
 	queryUpdateDepartment = `
 	WITH
 	payload as (
@@ -122,8 +122,8 @@ func (r *DepartmentRepository) GetListDepartment(ctx context.Context, userID int
 	for rows.Next() {
 		department := dto.Department{}
 		err := rows.Scan(
-			&department.Name,
 			&department.DepartmentId,
+			&department.Name,
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse sql response")
