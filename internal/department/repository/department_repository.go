@@ -37,6 +37,7 @@ const (
 		AND (NULLIF(@name, '') is NULL OR name ILIKE '%' || NULLIF(@name, '') || '%' )
 	OFFSET @offset
 	LIMIT @limit;`
+	
 	queryUpdateDepartment = `
 	WITH
 	payload as (
@@ -59,6 +60,7 @@ const (
 	RETURNING
 	departments.id,
 	departments.name;`
+
 	queryCheckIsDepartmentExist = `
 	SELECT EXISTS (
 		SELECT id
@@ -68,10 +70,10 @@ const (
 			AND id = NULLIF(@id, 0)::bigint
 	) is_exists;`
 
-	queryDeleteDepartment =`
+	queryDeleteDepartment = `
 	DELETE FROM departments WHERE id = @departmentId;
 	`
-	queryCheckIfEmployeeExists =`
+	queryCheckIfEmployeeExists = `
 	SELECT EXISTS (
 		SELECT id
 		FROM employees
@@ -132,62 +134,61 @@ func (r *DepartmentRepository) GetListDepartment(ctx context.Context, userID int
 	return &departments, nil
 }
 
-func (r *DepartmentRepository) UpdateDepartment(ctx context.Context, userID int, departmentId int, payload *dto.PatchDepartmentPayload)(*dto.Department,error){
+func (r *DepartmentRepository) UpdateDepartment(ctx context.Context, userID int, departmentId int, payload *dto.PatchDepartmentPayload) (*dto.Department, error) {
 
 	var department dto.Department
 
-	args := pgx.NamedArgs {
-		"name" : payload.Name,
-		"id" : departmentId,
+	args := pgx.NamedArgs{
+		"name": payload.Name,
+		"id":   departmentId,
 	}
 
-	err := r.pool.QueryRow(ctx, queryUpdateDepartment,args).Scan(
+	err := r.pool.QueryRow(ctx, queryUpdateDepartment, args).Scan(
 		&department.DepartmentId,
 		&department.Name,
 	)
 
 	if err != nil {
-		return nil, errors.Wrap(err,"failed to update departments")
+		return nil, errors.Wrap(err, "failed to update departments")
 	}
 
-	return &department,nil
+	return &department, nil
 }
 
-func (r *DepartmentRepository) CheckIfDepartmentExist(ctx context.Context, UserID int, departmentID int)(bool,error){
+func (r *DepartmentRepository) CheckIfDepartmentExist(ctx context.Context, UserID int, departmentID int) (bool, error) {
 	var isExist bool
 	args := pgx.NamedArgs{
-		"userID" : UserID,
-		"id" : departmentID,
+		"userID": UserID,
+		"id":     departmentID,
 	}
 	err := r.pool.QueryRow(ctx, queryCheckIsDepartmentExist, args).Scan(&isExist)
 	if err != nil {
-		return false, errors.Wrap(err,"failed to check is department exists")
+		return false, errors.Wrap(err, "failed to check is department exists")
 	}
-	return isExist,nil
+	return isExist, nil
 }
 
-func (r *DepartmentRepository) CheckIfEmployeeExist(ctx context.Context, UserID int, departmentID int)(bool,error){
+func (r *DepartmentRepository) CheckIfEmployeeExist(ctx context.Context, UserID int, departmentID int) (bool, error) {
 	var isExist bool
 	args := pgx.NamedArgs{
-		"userID" : UserID,
-
+		"userID": UserID,
 	}
 	err := r.pool.QueryRow(ctx, queryCheckIsDepartmentExist, args).Scan(&isExist)
 	if err != nil {
-		return false, errors.Wrap(err,"failed to check is employee exists")
+		return false, errors.Wrap(err, "failed to check is employee exists")
 	}
-	return isExist,nil
+	return isExist, nil
 }
 
-func (r *DepartmentRepository) DeleteDepartment(ctx context.Context, userID int, departmentID int,)error{
+func (r *DepartmentRepository) DeleteDepartment(ctx context.Context, userID int, departmentID int) error {
 	args := pgx.NamedArgs{
-		"userID": userID,
-		"departmentId" : departmentID,
+		"userID":       userID,
+		"departmentId": departmentID,
 	}
 
-	_,err := r.pool.Exec(ctx,queryDeleteDepartment,args)
+	_, err := r.pool.Exec(ctx, queryDeleteDepartment, args)
 	if err != nil {
-		return errors.Wrap(err,"failed to delete department")
+		return errors.Wrap(err, "failed to delete department")
 	}
 	return nil
 }
