@@ -33,10 +33,10 @@ func NewEmployeeHandler(employeeUsecase usecase.EmployeeUsecase, validator *vali
 func (h EmployeeHandler) CreateEmployee(ctx echo.Context) error {
 	var payload dto.CreateEmployeePayload
 	if err := ctx.Bind(&payload); err != nil {
+		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	// TODO: Add payload validator
 	if err := h.validator.Struct(payload); err != nil {
 		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
@@ -80,6 +80,7 @@ func (h EmployeeHandler) GetListEmployee(ctx echo.Context) error {
 	}
 
 	if err := ctx.Bind(&payload); err != nil {
+		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
@@ -107,9 +108,14 @@ func (h EmployeeHandler) UpdateEmployee(ctx echo.Context) error {
 
 	var payload dto.PatchEmployeePayload
 	if err := ctx.Bind(&payload); err != nil {
+		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
-	// TODO: add payload validator
+
+	if err := h.validator.Struct(payload); err != nil {
+		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
+		return ctx.JSON(response.WriteErrorResponse(err))
+	}
 
 	// TODO: get userID from auth token
 	userID := 1
@@ -125,6 +131,7 @@ func (h EmployeeHandler) UpdateEmployee(ctx echo.Context) error {
 func (h EmployeeHandler) DeleteEmployee(ctx echo.Context) error {
 	var payload dto.UpdateDeletePathParam
 	if err := ctx.Bind(&payload); err != nil {
+		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
