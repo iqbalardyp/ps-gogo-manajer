@@ -15,22 +15,18 @@ type Postgres struct {
 
 var (
 	pgInstance *Postgres
-	pgOnce     sync.Once
 )
 
 func Connect(ctx context.Context, dbUrl string) (*Postgres, error) {
-	var err error
+	pool, err := pgxpool.New(ctx, dbUrl)
+	if err != nil {
+		return nil, err
+	}
 
-	pgOnce.Do(func() {
-		pool, connErr := pgxpool.New(ctx, dbUrl)
-		if connErr != nil {
-			err = connErr
-			log.Fatal("unable to create Pool")
-			os.Exit(1)
-			return
-		}
-		pgInstance = &Postgres{pool}
-	})
+	if err := pool.Ping(ctx); err != nil {
+		return nil, err
+	}
+	pgInstance = &Postgres{pool}
 
 	return pgInstance, err
 }

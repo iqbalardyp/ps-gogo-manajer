@@ -1,7 +1,6 @@
 package config
 
 import (
-	"net/http"
 	"ps-gogo-manajer/db"
 	employeeHandler "ps-gogo-manajer/internal/employee/handler"
 	employeeRepository "ps-gogo-manajer/internal/employee/repository"
@@ -10,10 +9,16 @@ import (
 	departmentHandler "ps-gogo-manajer/internal/department/handler"
 	departmentRepository "ps-gogo-manajer/internal/department/repository"
 	departmentUsecase "ps-gogo-manajer/internal/department/usecase"
+	fileHandler "ps-gogo-manajer/internal/files/handler"
+	fileUsecase "ps-gogo-manajer/internal/files/usecase"
+	auth "ps-gogo-manajer/internal/middleware"
 	"ps-gogo-manajer/internal/routes"
-	"ps-gogo-manajer/pkg/response"
+	userHandler "ps-gogo-manajer/internal/user/handler"
+	userRepository "ps-gogo-manajer/internal/user/repository"
+	userUsecase "ps-gogo-manajer/internal/user/usecase"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -25,6 +30,7 @@ type BootstrapConfig struct {
 	DB        *db.Postgres
 	Log       *logrus.Logger
 	Validator *validator.Validate
+	S3Client  *s3.Client
 }
 
 func Bootstrap(config *BootstrapConfig) {
@@ -32,16 +38,17 @@ func Bootstrap(config *BootstrapConfig) {
 	employeeUseCase := employeeUsecase.NewEmployeeUsecase(*employeeRepo)
 	employeeHandler := employeeHandler.NewEmployeeHandler(*employeeUseCase, config.Validator)
 
+	userRepo := userRepository.NewUserRepository(config.DB.Pool)
+	userUseCase := userUsecase.NewUserUseCase(*userRepo)
+	userHandler := userHandler.NewUserHandler(*userUseCase, config.Validator)
+
+	fileUsecase := fileUsecase.NewFileUseCase(config.S3Client)
+	fileHandler := fileHandler.NewFileHandler(fileUsecase, config.Log)
+
 	//department variable
 	departmentRepo := departmentRepository.NewDepartmentRepository(config.DB.Pool)
 	departmentUsecase := departmentUsecase.NewDepartmentUsecases(*departmentRepo)
 	departmentHandler := departmentHandler.NewDepartmentHandler(*departmentUsecase,config.Validator)
-
-	routes := routes.RouteConfig{
-		App:             config.App,
-		EmployeeHandler: employeeHandler,
-		DepartmentHandler : departmentHandler,
-	}
 
 	// * Middleware
 	config.App.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
@@ -49,14 +56,17 @@ func Bootstrap(config *BootstrapConfig) {
 		ErrorMessage: "Timeout",
 		Timeout:      30 * time.Second,
 	}))
+	authMiddleware := auth.Auth()
 
-	// Health check
-	config.App.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, response.BaseResponse{
-			Status:  "Ok",
-			Message: "",
-		})
-	})
+	routes := routes.RouteConfig{
+		App:             config.App,
+		S3Client:        config.S3Client,
+		EmployeeHandler: employeeHandler,
+		UserHandler:     userHandler,
+		AuthMiddleware:  authMiddleware,
+		FileHandler:     fileHandler,
+		DepartmentHandler : departmentHandler,
+	}
 
 	routes.SetupRoutes()
 }
