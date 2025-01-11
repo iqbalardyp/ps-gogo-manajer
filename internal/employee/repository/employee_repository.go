@@ -27,7 +27,14 @@ const (
 			user_id = @userID
 			AND identity_number = @identityNumber
 	) is_exists;`
-	//  TODO:
+	queryCheckIfDepartmentExists = `
+	SELECT EXISTS (
+		SELECT id
+		FROM departments
+		WHERE 
+			user_id = @userID
+			AND id = NULLIF(@departmentID, 0)::bigint
+	) is_exists;`
 	queryGetListEmployee = `
 	SELECT
 		name,
@@ -38,19 +45,58 @@ const (
 	FROM employees
 	WHERE
 		user_id = @userID
-		-- AND (@identityNumber is null)
-		-- AND (@identityNumber is null OR identity_number ilike '@identityNumber%')
-		-- AND (@name is null OR name ilike '%@name%')
-		AND (@gender is null OR gender = @gender)
-		-- AND (@departmentID is null OR department_id = @departmentID)
+		AND (NULLIF(@gender, '') is NULL OR gender = NULLIF(@gender, '')::enum_gender)
+		AND (NULLIF(@departmentID, 0) is NULL OR department_id = NULLIF(@departmentID, 0)::bigint)
+		AND (NULLIF(@identityNumber, '') is NULL OR identity_number ILIKE NULLIF(@identityNumber, '') || '%' )
+		AND (NULLIF(@name, '') is NULL OR name ILIKE '%' || NULLIF(@name, '') || '%' )
 	OFFSET @offset
-	LIMIT @limit`
+	LIMIT @limit;`
 	queryCreateEmployee = `
 	INSERT INTO employees(name, gender, identity_number, department_id, user_id, employee_image_uri)
 	VALUES (@name, @gender, @identityNumber, @departmentID, @userID, @employeeImageUri)
 	RETURNING name, identity_number, gender, department_id, employee_image_uri;`
-	// TODO:
-	// queryUpdateEmployee = ""
+	queryUpdateEmployee = `
+	WITH 
+	payload as (
+		SELECT
+			NULLIF(t.identity_number, '') identity_number,
+			NULLIF(t.name, '') name,
+			NULLIF(t.gender, '')::enum_gender gender,
+			NULLIF(t.department_id, '')::bigint department_id,
+			NULLIF(t.employee_image_uri, '') employee_image_uri
+		FROM (
+			VALUES (
+				@payloadIdentityNumber,
+				@name,
+				@gender,
+				@departmentId,
+				@employeeImageUri
+			)
+		) AS t(
+			identity_number,
+			name,
+			gender,
+			department_id,
+			employee_image_uri
+		)
+	)
+	UPDATE employees
+	SET
+		identity_number = COALESCE(payload.identity_number, employees.identity_number),
+		name = COALESCE(payload.name, employees.name),
+		gender = COALESCE(payload.gender, employees.gender),
+		department_id = COALESCE(payload.department_id, employees.department_id),
+		employee_image_uri = COALESCE(payload.employee_image_uri, employees.employee_image_uri)
+	FROM payload
+	WHERE
+		employees.user_id = @userID
+		AND employees.identity_number = @identityNumber
+	RETURNING
+		employees.name,
+		employees.identity_number,
+		employees.gender,
+		employees.department_id,
+		employees.employee_image_uri;`
 	queryDeleteEmployee = "DELETE FROM employees WHERE user_id = @userID AND identity_number = @identityNumber;"
 )
 
@@ -64,6 +110,21 @@ func (r *EmployeeRepository) CheckIfEmployeeExists(ctx context.Context, userID i
 	err := r.pool.QueryRow(ctx, queryCheckIfEmployeeExists, args).Scan(&isExist)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to check if employee exists")
+	}
+
+	return isExist, nil
+}
+
+func (r *EmployeeRepository) CheckIfDepartmentExists(ctx context.Context, userID int, departmentID string) (bool, error) {
+	var isExist bool
+	args := pgx.NamedArgs{
+		"userID":       userID,
+		"departmentID": departmentID,
+	}
+
+	err := r.pool.QueryRow(ctx, queryCheckIfDepartmentExists, args).Scan(&isExist)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to check if department exists")
 	}
 
 	return isExist, nil
@@ -98,10 +159,10 @@ func (r *EmployeeRepository) GetListEmployee(ctx context.Context, userID int, pa
 	var employees []dto.Employee
 	args := pgx.NamedArgs{
 		"userID":         userID,
-		"identityNumber": &payload.IdentityNumber,
-		"name":           &payload.Name,
+		"identityNumber": payload.IdentityNumber,
+		"name":           payload.Name,
 		"gender":         payload.Gender,
-		"departmentID":   &payload.DepartmentId,
+		"departmentID":   payload.DepartmentId,
 		"limit":          payload.Limit,
 		"offset":         payload.Offset,
 	}
@@ -135,6 +196,27 @@ func (r *EmployeeRepository) GetListEmployee(ctx context.Context, userID int, pa
 
 func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, userID int, identityNumber string, payload *dto.PatchEmployeePayload) (*dto.Employee, error) {
 	var employee dto.Employee
+	args := pgx.NamedArgs{
+		"userID":                userID,
+		"identityNumber":        identityNumber,
+		"payloadIdentityNumber": payload.IdentityNumber,
+		"name":                  payload.Name,
+		"gender":                payload.Gender,
+		"departmentId":          payload.DepartmentId,
+		"employeeImageUri":      payload.EmployeeImageUri,
+	}
+
+	err := r.pool.QueryRow(ctx, queryUpdateEmployee, args).Scan(
+		&employee.Name,
+		&employee.IdentityNumber,
+		&employee.Gender,
+		&employee.DepartmentId,
+		&employee.EmployeeImageUri,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to update employee")
+	}
+
 	return &employee, nil
 }
 

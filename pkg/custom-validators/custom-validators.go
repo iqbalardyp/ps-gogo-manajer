@@ -2,8 +2,6 @@ package customValidators
 
 import (
 	"strconv"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 var validGender = map[string]bool{
@@ -24,27 +22,27 @@ func ParseLimitOffset(val string, defaultVal int) int {
 	return parsedVal
 }
 
-func ParseGender(genderStr string) (pgtype.Text, bool) {
+func ParseGender(genderStr string) (string, bool) {
 	if genderStr == "" {
-		return pgtype.Text{Valid: false, String: ""}, true
+		return "", true
 	}
 
 	_, isValid := validGender[genderStr]
-	return pgtype.Text{String: genderStr, Valid: true}, isValid
+	return genderStr, isValid
 }
 
-func ParseDepartmentID(id string) (*int, bool) {
+func ParseDepartmentID(id string) (int, bool) {
 	if id == "" {
-		return nil, true
+		return 0, true
 	}
 	departmentID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, false
+		return 0, false
 	}
 
 	if departmentID < 1 {
-		return nil, false
+		return 0, false
 	}
 
-	return &departmentID, true
+	return departmentID, true
 }
