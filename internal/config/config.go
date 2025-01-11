@@ -5,6 +5,8 @@ import (
 	employeeHandler "ps-gogo-manajer/internal/employee/handler"
 	employeeRepository "ps-gogo-manajer/internal/employee/repository"
 	employeeUsecase "ps-gogo-manajer/internal/employee/usecase"
+	fileHandler "ps-gogo-manajer/internal/files/handler"
+	fileUsecase "ps-gogo-manajer/internal/files/usecase"
 	auth "ps-gogo-manajer/internal/middleware"
 	"ps-gogo-manajer/internal/routes"
 	userHandler "ps-gogo-manajer/internal/user/handler"
@@ -12,6 +14,7 @@ import (
 	userUsecase "ps-gogo-manajer/internal/user/usecase"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -23,6 +26,7 @@ type BootstrapConfig struct {
 	DB        *db.Postgres
 	Log       *logrus.Logger
 	Validator *validator.Validate
+	S3Client  *s3.Client
 }
 
 func Bootstrap(config *BootstrapConfig) {
@@ -34,6 +38,9 @@ func Bootstrap(config *BootstrapConfig) {
 	userUseCase := userUsecase.NewUserUseCase(*userRepo)
 	userHandler := userHandler.NewUserHandler(*userUseCase, config.Validator)
 
+	fileUsecase := fileUsecase.NewFileUseCase(config.S3Client)
+	fileHandler := fileHandler.NewFileHandler(fileUsecase, config.Log)
+
 	// * Middleware
 	config.App.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Skipper:      middleware.DefaultSkipper,
@@ -44,9 +51,11 @@ func Bootstrap(config *BootstrapConfig) {
 
 	routes := routes.RouteConfig{
 		App:             config.App,
+		S3Client:        config.S3Client,
 		EmployeeHandler: employeeHandler,
 		UserHandler:     userHandler,
 		AuthMiddleware:  authMiddleware,
+		FileHandler:     fileHandler,
 	}
 
 	routes.SetupRoutes()

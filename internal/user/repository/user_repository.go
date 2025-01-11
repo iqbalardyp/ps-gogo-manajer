@@ -49,7 +49,7 @@ SELECT id, email, hashed_password, username, user_image_uri, company_name, compa
 WHERE id = $1 LIMIT 1
 `
 
-func (r *UserRepository) GetUser(ctx context.Context, id int64) (model.User, error) {
+func (r *UserRepository) GetUser(ctx context.Context, id int) (model.User, error) {
 	row := r.pool.QueryRow(ctx, getUser, id)
 	var i model.User
 	err := row.Scan(
@@ -103,7 +103,7 @@ type UpdateUserParams struct {
 	UserImageUri    *string
 	CompanyName     *string
 	CompanyImageUri *string
-	ID              int64
+	ID              int
 }
 
 func (r *UserRepository) UpdateUser(ctx context.Context, arg UpdateUserParams) (model.User, error) {

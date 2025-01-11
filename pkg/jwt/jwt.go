@@ -9,12 +9,12 @@ import (
 )
 
 type JwtClaim struct {
-	Id    int64  `json:"id"`
+	Id    int    `json:"id"`
 	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
-func CreateToken(id int64, email string) string {
+func CreateToken(id int, email string) string {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtClaim{
 		Id:    id,

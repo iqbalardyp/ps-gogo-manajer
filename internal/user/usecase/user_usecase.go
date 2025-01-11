@@ -66,7 +66,7 @@ func (c *UserUseCase) Login(ctx context.Context, request *dto.AuthRequest) (*str
 	return &token, nil
 }
 
-func (c *UserUseCase) GetUser(ctx context.Context, userid int64) (*model.User, error) {
+func (c *UserUseCase) GetUser(ctx context.Context, userid int) (*model.User, error) {
 
 	user, err := c.userRepo.GetUser(ctx, userid)
 	if err != nil {
@@ -79,7 +79,7 @@ func (c *UserUseCase) GetUser(ctx context.Context, userid int64) (*model.User, e
 	return &user, nil
 }
 
-func (c *UserUseCase) UpdateUser(ctx context.Context, request *dto.UpdateUserRequest, userid int64) (*model.User, error) {
+func (c *UserUseCase) UpdateUser(ctx context.Context, request *dto.UpdateUserRequest, userid int) (*model.User, error) {
 
 	arg := repository.UpdateUserParams{
 		ID:              userid,

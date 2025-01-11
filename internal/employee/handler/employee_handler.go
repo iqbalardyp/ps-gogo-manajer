@@ -6,6 +6,7 @@ import (
 	"ps-gogo-manajer/internal/employee/usecase"
 	customErrors "ps-gogo-manajer/pkg/custom-errors"
 	customValidators "ps-gogo-manajer/pkg/custom-validators"
+	"ps-gogo-manajer/pkg/jwt"
 	"ps-gogo-manajer/pkg/response"
 
 	"github.com/go-playground/validator/v10"
@@ -42,10 +43,8 @@ func (h EmployeeHandler) CreateEmployee(ctx echo.Context) error {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	// TODO: Get userID from auth token
-	userID := 1
-
-	employee, err := h.employeeUsecase.CreateEmployee(ctx.Request().Context(), userID, &payload)
+	userData := ctx.Get("user").(*jwt.JwtClaim)
+	employee, err := h.employeeUsecase.CreateEmployee(ctx.Request().Context(), userData.Id, &payload)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
@@ -84,10 +83,8 @@ func (h EmployeeHandler) GetListEmployee(ctx echo.Context) error {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	// TODO: get userID from auth token
-	userID := 1
-
-	employees, err := h.employeeUsecase.GetListEmployee(ctx.Request().Context(), userID, &payload)
+	userData := ctx.Get("user").(*jwt.JwtClaim)
+	employees, err := h.employeeUsecase.GetListEmployee(ctx.Request().Context(), userData.Id, &payload)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
@@ -117,10 +114,8 @@ func (h EmployeeHandler) UpdateEmployee(ctx echo.Context) error {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	// TODO: get userID from auth token
-	userID := 1
-
-	employee, err := h.employeeUsecase.UpdateEmployee(ctx.Request().Context(), userID, identityNumber, &payload)
+	userData := ctx.Get("user").(*jwt.JwtClaim)
+	employee, err := h.employeeUsecase.UpdateEmployee(ctx.Request().Context(), userData.Id, identityNumber, &payload)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
@@ -135,10 +130,8 @@ func (h EmployeeHandler) DeleteEmployee(ctx echo.Context) error {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	// TODO: get userID from auth token
-	userID := 1
-
-	err := h.employeeUsecase.DeleteEmployee(ctx.Request().Context(), userID, payload.IdentityNumber)
+	userData := ctx.Get("user").(*jwt.JwtClaim)
+	err := h.employeeUsecase.DeleteEmployee(ctx.Request().Context(), userData.Id, payload.IdentityNumber)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
