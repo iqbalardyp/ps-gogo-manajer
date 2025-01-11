@@ -6,10 +6,13 @@ import (
 	employeeHandler "ps-gogo-manajer/internal/employee/handler"
 	employeeRepository "ps-gogo-manajer/internal/employee/repository"
 	employeeUsecase "ps-gogo-manajer/internal/employee/usecase"
+	fileHandler "ps-gogo-manajer/internal/files/handler"
+	fileUsecase "ps-gogo-manajer/internal/files/usecase"
 	"ps-gogo-manajer/internal/routes"
 	"ps-gogo-manajer/pkg/response"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -21,15 +24,21 @@ type BootstrapConfig struct {
 	DB        *db.Postgres
 	Log       *logrus.Logger
 	Validator *validator.Validate
+	S3Client  *s3.Client
 }
 
 func Bootstrap(config *BootstrapConfig) {
 	employeeRepo := employeeRepository.NewEmployeeRepository(config.DB.Pool)
 	employeeUseCase := employeeUsecase.NewEmployeeUsecase(*employeeRepo)
 	employeeHandler := employeeHandler.NewEmployeeHandler(*employeeUseCase, config.Validator)
+
+	fileUsecase := fileUsecase.NewFileUseCase(config.S3Client)
+	fileHandler := fileHandler.NewFileHandler(*&fileUsecase, config.Log)
 	routes := routes.RouteConfig{
 		App:             config.App,
 		EmployeeHandler: employeeHandler,
+		S3Client:        config.S3Client,
+		FileHandler:     fileHandler,
 	}
 
 	// * Middleware
