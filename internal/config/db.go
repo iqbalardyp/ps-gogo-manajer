@@ -24,6 +24,7 @@ func NewDatabase(log *logrus.Logger) *db.Postgres {
 	db, err := db.Connect(ctx, dbUrl)
 	if err != nil {
 		log.Fatal("unable connect to db", err.Error())
+		os.Exit(1)
 	}
 
 	return db

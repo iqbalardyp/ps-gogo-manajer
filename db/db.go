@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"log"
+	"os"
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -23,6 +25,8 @@ func Connect(ctx context.Context, dbUrl string) (*Postgres, error) {
 		pool, connErr := pgxpool.New(ctx, dbUrl)
 		if connErr != nil {
 			err = connErr
+			log.Fatal("unable to create Pool")
+			os.Exit(1)
 			return
 		}
 		pgInstance = &Postgres{pool}

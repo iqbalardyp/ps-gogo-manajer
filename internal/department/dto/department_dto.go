@@ -1,12 +1,24 @@
 package dto
 
 type Department struct {
-	Name string
-	UserId string
-}
-
-type CreateDepartmentPayload struct{
-	Name string `json:"name" validate:"required,min=4,max=33"`
 	DepartmentId string `json:"departmentId"`
+	Name         string `json:"name"`
 }
 
+type CreateDepartmentPayload struct {
+	Name string `json:"name" validate:"required,min=4,max=33"`
+}
+
+type GetDepartmentListParams struct {
+	Limit  int
+	Offset int
+	Name   string
+}
+
+type PatchDepartmentPayload struct {
+	Name string `json:"name" validate:"omitempty,min=4,max=33"`
+}
+
+type UpdateDeletePathParam struct {
+	IdentityNumber string `param:"identityNumber" validate:"required"`
+}

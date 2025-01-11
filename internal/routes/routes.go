@@ -3,14 +3,16 @@ package routes
 import (
 	// "ps-gogo-manajer/internal/employee/handler"
 
-	"ps-gogo-manajer/internal/employee/handler"
+	employeeHandler "ps-gogo-manajer/internal/employee/handler"
+	departmentHandler "ps-gogo-manajer/internal/department/handler"
 
 	"github.com/labstack/echo/v4"
 )
 
 type RouteConfig struct {
 	App             *echo.Echo
-	EmployeeHandler *handler.EmployeeHandler
+	EmployeeHandler *employeeHandler.EmployeeHandler
+	DepartmentHandler *departmentHandler.DepartmentHandler
 }
 
 func (r *RouteConfig) SetupRoutes() {
@@ -30,12 +32,22 @@ func (r *RouteConfig) setupAuthRoutes() {
 	// 	SigningKey:             []byte("secret"),
 	// }))
 	r.setupEmployeeRoute(v1)
+	r.setupDepartmentRoute(v1)
 }
 
 func (r *RouteConfig) setupEmployeeRoute(api *echo.Group) {
 	employee := api.Group("/employee")
 	employee.GET("", r.EmployeeHandler.GetListEmployee)
 	employee.POST("", r.EmployeeHandler.CreateEmployee)
-	employee.PUT("/:identityNumber", r.EmployeeHandler.UpdateEmployee)
+	employee.PATCH("/:identityNumber", r.EmployeeHandler.UpdateEmployee)
 	employee.DELETE("/:identityNumber", r.EmployeeHandler.DeleteEmployee)
+}
+
+func (r *RouteConfig) setupDepartmentRoute(api *echo.Group){
+	department := api.Group("/department")
+
+	department.GET("",r.DepartmentHandler.GetListDepartment)
+	department.POST("", r.DepartmentHandler.CreateDepartment)
+	department.PATCH("/:departmentId", r.DepartmentHandler.UpdateDepartment)
+	department.DELETE("/:departmentId",r.DepartmentHandler.DeleteDepartment)
 }
