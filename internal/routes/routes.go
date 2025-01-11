@@ -1,14 +1,14 @@
 package routes
 
 import (
-	"ps-gogo-manajer/internal/employee/handler"
+	// "ps-gogo-manajer/internal/employee/handler"
 
 	"github.com/labstack/echo/v4"
 )
 
 type RouteConfig struct {
 	App             *echo.Echo
-	EmployeeHandler *handler.EmployeeHandler
+	// EmployeeHandler *handler.EmployeeHandler
 }
 
 func (r *RouteConfig) SetupRoutes() {
@@ -16,6 +16,6 @@ func (r *RouteConfig) SetupRoutes() {
 }
 
 func (r *RouteConfig) SetupEmployeeRoute() {
-	employee := r.App.Group("/employee")
-	employee.GET("/:identityNumber", r.EmployeeHandler.GetEmployeeByIdentityNumber)
+	// employee := r.App.Group("/employee")
+	// employee.GET("/:identityNumber", r.EmployeeHandler.GetEmployeeByIdentityNumber)
 }

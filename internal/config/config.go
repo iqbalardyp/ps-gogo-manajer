@@ -2,11 +2,11 @@ package config
 
 import (
 	"net/http"
-	"os"
+	// "os"
 	"ps-gogo-manajer/db"
-	employeeHandler "ps-gogo-manajer/internal/employee/handler"
-	employeeRepository "ps-gogo-manajer/internal/employee/repository"
-	employeeUsecase "ps-gogo-manajer/internal/employee/usecase"
+	// employeeHandler "ps-gogo-manajer/internal/employee/handler"
+	// employeeRepository "ps-gogo-manajer/internal/employee/repository"
+	// employeeUsecase "ps-gogo-manajer/internal/employee/usecase"
 	"ps-gogo-manajer/internal/routes"
 	"ps-gogo-manajer/pkg/response"
 	"time"
@@ -25,12 +25,12 @@ type BootstrapConfig struct {
 }
 
 func Bootstrap(config *BootstrapConfig) {
-	employeeRepo := employeeRepository.NewEmployeeRepository(config.DB.Pool)
-	employeeUseCase := employeeUsecase.NewEmployeeUsecase(*employeeRepo)
-	employeeHandler := employeeHandler.NewEmployeeHandler(*employeeUseCase)
+	// employeeRepo := employeeRepository.NewEmployeeRepository(config.DB.Pool)
+	// employeeUseCase := employeeUsecase.NewEmployeeUsecase(*employeeRepo)
+	// employeeHandler := employeeHandler.NewEmployeeHandler(*employeeUseCase)
 	routes := routes.RouteConfig{
 		App:             config.App,
-		EmployeeHandler: employeeHandler,
+		// EmployeeHandler: employeeHandler,
 	}
 
 	// * Middleware
@@ -42,9 +42,9 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// Health check
 	config.App.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, response.HealthCheck{
-			AppName: os.Getenv("APP_NAME"),
+		return c.JSON(http.StatusOK, response.BaseResponse{
 			Status:  "Ok",
+			Message: "",
 		})
 	})
 
