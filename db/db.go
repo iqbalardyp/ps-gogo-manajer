@@ -2,10 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
-	"os"
-	"sync"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

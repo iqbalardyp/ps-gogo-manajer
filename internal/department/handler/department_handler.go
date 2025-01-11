@@ -6,6 +6,7 @@ import (
 	"ps-gogo-manajer/internal/department/usecase"
 	customErrors "ps-gogo-manajer/pkg/custom-errors"
 	customValidators "ps-gogo-manajer/pkg/custom-validators"
+	"ps-gogo-manajer/pkg/jwt"
 	"ps-gogo-manajer/pkg/response"
 	"strconv"
 
@@ -45,9 +46,9 @@ func(h DepartmentHandler) CreateDepartment(ctx echo.Context) error{
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	userID := 1
+	userData := ctx.Get("user").(*jwt.JwtClaim)
 
-	department, err := h.departmentUsecase.CreateDepartment(ctx.Request().Context(),userID,&payload)
+	department, err := h.departmentUsecase.CreateDepartment(ctx.Request().Context(),userData.Id,&payload)
 
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
@@ -74,9 +75,9 @@ func(h DepartmentHandler) GetListDepartment(ctx echo.Context)error{
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	userID := 1
+	userData := ctx.Get("user").(*jwt.JwtClaim)
 
-	departments, err := h.departmentUsecase.GetListDepartment(ctx.Request().Context(),userID,&payload)
+	departments, err := h.departmentUsecase.GetListDepartment(ctx.Request().Context(),userData.Id,&payload)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
@@ -115,9 +116,9 @@ func (h DepartmentHandler)UpdateDepartment(ctx echo.Context) error{
 		return ctx.JSON(response.WriteErrorResponse(err))
     }
 
-	userID := 1
+	userData := ctx.Get("user").(*jwt.JwtClaim)
 
-	department,err := h.departmentUsecase.UpdateDepartment(ctx.Request().Context(),userID,id,&payload)
+	department,err := h.departmentUsecase.UpdateDepartment(ctx.Request().Context(),userData.Id,id,&payload)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
@@ -140,9 +141,9 @@ func (h DepartmentHandler) DeleteDepartment (ctx echo.Context) error {
 		err = errors.Wrap(customErrors.ErrBadRequest,"wrong department id")
 		return ctx.JSON(response.WriteErrorResponse(err))
     }
-	userID :=1
+	userData := ctx.Get("user").(*jwt.JwtClaim)
 
-	h.departmentUsecase.DeleteDepartment(ctx.Request().Context(), userID,id)
+	h.departmentUsecase.DeleteDepartment(ctx.Request().Context(), userData.Id,id)
 
 	return ctx.JSON(http.StatusOK,response.BaseResponse{
 		Status: http.StatusText(http.StatusOK),
