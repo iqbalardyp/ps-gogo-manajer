@@ -20,6 +20,7 @@ func NewEmployeeUsecase(employeeRepo repository.EmployeeRepository) *EmployeeUse
 }
 
 func (u *EmployeeUsecase) CreateEmployee(ctx context.Context, userID int, payload *dto.CreateEmployeePayload) (*dto.Employee, error) {
+	// Validate if identity number already exists
 	isIdentityNumberExists, err := u.employeeRepo.CheckIfEmployeeExists(ctx, userID, payload.IdentityNumber)
 	if err != nil {
 		return nil, err
@@ -27,6 +28,16 @@ func (u *EmployeeUsecase) CreateEmployee(ctx context.Context, userID int, payloa
 
 	if isIdentityNumberExists {
 		return nil, errors.Wrap(customErrors.ErrConflict, "identity number already exists")
+	}
+
+	// Validate if department id for respective user exists
+	isDepartmentExists, err := u.employeeRepo.CheckIfDepartmentExists(ctx, userID, payload.DepartmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isDepartmentExists {
+		return nil, errors.Wrap(customErrors.ErrNotFound, "department id for this user not found")
 	}
 
 	return u.employeeRepo.CreateEmployee(ctx, userID, payload)
@@ -47,7 +58,7 @@ func (u *EmployeeUsecase) UpdateEmployee(ctx context.Context, userID int, identi
 		return nil, errors.Wrap(customErrors.ErrNotFound, "employee not found")
 	}
 
-	// * Validate if payload's identityNumber exists
+	// * Validate if payload's identityNumber already exists
 	isIdentityNumberExists, err := u.employeeRepo.CheckIfEmployeeExists(ctx, userID, payload.IdentityNumber)
 	if err != nil {
 		return nil, err
@@ -55,6 +66,16 @@ func (u *EmployeeUsecase) UpdateEmployee(ctx context.Context, userID int, identi
 
 	if isIdentityNumberExists {
 		return nil, errors.Wrap(customErrors.ErrConflict, "identity number already exists")
+	}
+
+	// Validate if department id for respective user exists
+	isDepartmentExists, err := u.employeeRepo.CheckIfDepartmentExists(ctx, userID, payload.DepartmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isDepartmentExists {
+		return nil, errors.Wrap(customErrors.ErrNotFound, "department id for this user not found")
 	}
 
 	return u.employeeRepo.UpdateEmployee(ctx, userID, identityNumber, payload)
