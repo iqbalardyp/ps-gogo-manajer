@@ -42,20 +42,24 @@ func (c *UserHandler) AuthenticateUser(ctx echo.Context) error {
 
 	var token *string
 	var err error
+	var statusCode int
 
 	if request.Action == "create" {
 		token, err = c.UseCase.Create(ctx.Request().Context(), request)
+		statusCode = http.StatusCreated
 	}
 
 	if request.Action == "login" {
 		token, err = c.UseCase.Login(ctx.Request().Context(), request)
+		statusCode = http.StatusOK
 	}
 
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	return ctx.JSON(http.StatusOK, &dto.AuthResponse{
+	return ctx.JSON(statusCode, &dto.AuthResponse{
+		Email:       request.Email,
 		AccessToken: *token,
 	})
 }
