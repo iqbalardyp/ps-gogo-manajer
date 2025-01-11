@@ -19,6 +19,7 @@ func main() {
 	log := config.NewLogger()
 	validator := config.NewValidator()
 	app := echo.New()
+	s3Client := config.NewS3Client()
 	pg := config.NewDatabase(log)
 	defer pg.Pool.Close()
 
@@ -27,6 +28,7 @@ func main() {
 		DB:        pg,
 		Log:       log,
 		Validator: validator,
+		S3Client:  s3Client,
 	})
 
 	PORT := os.Getenv("PORT")
