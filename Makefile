@@ -5,7 +5,7 @@ include .env
 export
 
 # Database URL construction
-DB_URL=$(MIGRATION_DB_URL)
+DB_URL=${DATABASE_URL}
 
 # Default number of migrations to up/down
 N ?= 1

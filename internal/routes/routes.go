@@ -1,33 +1,41 @@
 package routes
 
 import (
-	"ps-gogo-manajer/internal/employee/handler"
+	"net/http"
+	employeeHandler "ps-gogo-manajer/internal/employee/handler"
+	userHandler "ps-gogo-manajer/internal/user/handler"
+	"ps-gogo-manajer/pkg/response"
 
 	"github.com/labstack/echo/v4"
 )
 
 type RouteConfig struct {
 	App             *echo.Echo
-	EmployeeHandler *handler.EmployeeHandler
+	EmployeeHandler *employeeHandler.EmployeeHandler
+	UserHandler     *userHandler.UserHandler
+	AuthMiddleware  echo.MiddlewareFunc
 }
 
 func (r *RouteConfig) SetupRoutes() {
-	// r.setupPublicRoutes()
+	r.setupPublicRoutes()
 	r.setupAuthRoutes()
 }
 
 func (r *RouteConfig) setupPublicRoutes() {
-	// TODO: add public routes
-	// auth := r.App.Group("/auth")
+	r.App.GET("/", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, response.BaseResponse{
+			Status:  "Ok",
+			Message: "",
+		})
+	})
+	auth := r.App.Group("/auth")
+	auth.POST("/", r.UserHandler.AuthenticateUser)
 }
 func (r *RouteConfig) setupAuthRoutes() {
-	v1 := r.App.Group("/v1")
+	v1 := r.App.Group("/v1", r.AuthMiddleware)
 
-	// TODO: use echo-jwt
-	// v1.Use(echojwt.WithConfig(echojwt.Config{
-	// 	SigningKey:             []byte("secret"),
-	// }))
 	r.setupEmployeeRoute(v1)
+	r.setupUserRoute(v1)
 }
 
 func (r *RouteConfig) setupEmployeeRoute(api *echo.Group) {
@@ -36,4 +44,10 @@ func (r *RouteConfig) setupEmployeeRoute(api *echo.Group) {
 	employee.POST("", r.EmployeeHandler.CreateEmployee)
 	employee.PUT("/:identityNumber", r.EmployeeHandler.UpdateEmployee)
 	employee.DELETE("/:identityNumber", r.EmployeeHandler.DeleteEmployee)
+}
+
+func (r *RouteConfig) setupUserRoute(api *echo.Group) {
+	user := api.Group("/user")
+	user.GET("/", r.UserHandler.GetUser)
+	user.PATCH("/", r.UserHandler.UpdateUser)
 }
