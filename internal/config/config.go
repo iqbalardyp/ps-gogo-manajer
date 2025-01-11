@@ -5,6 +5,10 @@ import (
 	employeeHandler "ps-gogo-manajer/internal/employee/handler"
 	employeeRepository "ps-gogo-manajer/internal/employee/repository"
 	employeeUsecase "ps-gogo-manajer/internal/employee/usecase"
+
+	departmentHandler "ps-gogo-manajer/internal/department/handler"
+	departmentRepository "ps-gogo-manajer/internal/department/repository"
+	departmentUsecase "ps-gogo-manajer/internal/department/usecase"
 	fileHandler "ps-gogo-manajer/internal/files/handler"
 	fileUsecase "ps-gogo-manajer/internal/files/usecase"
 	auth "ps-gogo-manajer/internal/middleware"
@@ -41,6 +45,11 @@ func Bootstrap(config *BootstrapConfig) {
 	fileUsecase := fileUsecase.NewFileUseCase(config.S3Client)
 	fileHandler := fileHandler.NewFileHandler(fileUsecase, config.Log)
 
+	//department variable
+	departmentRepo := departmentRepository.NewDepartmentRepository(config.DB.Pool)
+	departmentUsecase := departmentUsecase.NewDepartmentUsecases(*departmentRepo)
+	departmentHandler := departmentHandler.NewDepartmentHandler(*departmentUsecase,config.Validator)
+
 	// * Middleware
 	config.App.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Skipper:      middleware.DefaultSkipper,
@@ -56,6 +65,7 @@ func Bootstrap(config *BootstrapConfig) {
 		UserHandler:     userHandler,
 		AuthMiddleware:  authMiddleware,
 		FileHandler:     fileHandler,
+		DepartmentHandler : departmentHandler,
 	}
 
 	routes.SetupRoutes()

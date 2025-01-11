@@ -5,9 +5,11 @@ import (
 	employeeHandler "ps-gogo-manajer/internal/employee/handler"
 	fileHandler "ps-gogo-manajer/internal/files/handler"
 	userHandler "ps-gogo-manajer/internal/user/handler"
+	departmentHandler "ps-gogo-manajer/internal/department/handler"
 	"ps-gogo-manajer/pkg/response"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -18,6 +20,7 @@ type RouteConfig struct {
 	EmployeeHandler *employeeHandler.EmployeeHandler
 	UserHandler     *userHandler.UserHandler
 	AuthMiddleware  echo.MiddlewareFunc
+	DepartmentHandler *departmentHandler.DepartmentHandler
 }
 
 func (r *RouteConfig) SetupRoutes() {
@@ -41,13 +44,14 @@ func (r *RouteConfig) setupAuthRoutes() {
 	r.setupEmployeeRoute(v1)
 	r.setupUserRoute(v1)
 	r.setupFileRoutes(v1)
+	r.setupDepartmentRoute(v1)
 }
 
 func (r *RouteConfig) setupEmployeeRoute(api *echo.Group) {
 	employee := api.Group("/employee", r.AuthMiddleware)
 	employee.GET("", r.EmployeeHandler.GetListEmployee)
 	employee.POST("", r.EmployeeHandler.CreateEmployee)
-	employee.PUT("/:identityNumber", r.EmployeeHandler.UpdateEmployee)
+	employee.PATCH("/:identityNumber", r.EmployeeHandler.UpdateEmployee)
 	employee.DELETE("/:identityNumber", r.EmployeeHandler.DeleteEmployee)
 }
 
@@ -59,4 +63,13 @@ func (r *RouteConfig) setupUserRoute(api *echo.Group) {
 
 func (r *RouteConfig) setupFileRoutes(api *echo.Group) {
 	api.POST("/file", r.FileHandler.UploadFile, r.AuthMiddleware)
+}
+
+func (r *RouteConfig) setupDepartmentRoute(api *echo.Group){
+	department := api.Group("/department",r.AuthMiddleware)
+
+	department.GET("",r.DepartmentHandler.GetListDepartment)
+	department.POST("", r.DepartmentHandler.CreateDepartment)
+	department.PATCH("/:departmentId", r.DepartmentHandler.UpdateDepartment)
+	department.DELETE("/:departmentId",r.DepartmentHandler.DeleteDepartment)
 }
