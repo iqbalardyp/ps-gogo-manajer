@@ -3,9 +3,9 @@ package config
 import (
 	"net/http"
 	"ps-gogo-manajer/db"
-	// employeeHandler "ps-gogo-manajer/internal/employee/handler"
-	// employeeRepository "ps-gogo-manajer/internal/employee/repository"
-	// employeeUsecase "ps-gogo-manajer/internal/employee/usecase"
+	employeeHandler "ps-gogo-manajer/internal/employee/handler"
+	employeeRepository "ps-gogo-manajer/internal/employee/repository"
+	employeeUsecase "ps-gogo-manajer/internal/employee/usecase"
 	"ps-gogo-manajer/internal/routes"
 	"ps-gogo-manajer/pkg/response"
 	"time"
@@ -29,7 +29,7 @@ func Bootstrap(config *BootstrapConfig) {
 	employeeHandler := employeeHandler.NewEmployeeHandler(*employeeUseCase, config.Validator)
 	routes := routes.RouteConfig{
 		App:             config.App,
-		// EmployeeHandler: employeeHandler,
+		EmployeeHandler: employeeHandler,
 	}
 
 	// * Middleware

@@ -17,7 +17,6 @@ func NewDepartmentUsecases(departmentRepo repository.DepartmentRepository)*Depar
 }
 
 func (u *DepartmentUsecase) CreateEmployee(ctx context.Context, userID int, payload *dto.CreateDepartmentPayload) (*dto.Department, error) {
-
 	
 	return u.departmentRepo.CreateDepartment(ctx, userID, payload)
 }
