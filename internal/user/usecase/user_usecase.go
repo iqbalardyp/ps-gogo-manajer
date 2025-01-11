@@ -25,7 +25,11 @@ func NewUserUseCase(userRepo repository.UserRepository) *UserUseCase {
 }
 
 func (c *UserUseCase) Create(ctx context.Context, request *dto.AuthRequest) (*string, error) {
-	hashedPassword := bcrypt.HashPassword(request.Password)
+	hashedPassword, err := bcrypt.HashPassword(request.Password)
+	if err != nil {
+		return nil, err
+	}
+
 	arg := repository.CreateUserParams{
 		Email:          request.Email,
 		HashedPassword: hashedPassword,
@@ -40,7 +44,10 @@ func (c *UserUseCase) Create(ctx context.Context, request *dto.AuthRequest) (*st
 		return nil, errors.Wrap(err, "failed to create user")
 	}
 
-	token := jwt.CreateToken(user.ID, user.Email)
+	token, err := jwt.CreateToken(user.ID, user.Email)
+	if err != nil {
+		return nil, err
+	}
 
 	return &token, nil
 }
@@ -61,7 +68,10 @@ func (c *UserUseCase) Login(ctx context.Context, request *dto.AuthRequest) (*str
 		return nil, errors.Wrap(customErrors.ErrBadRequest, "password is wrong")
 	}
 
-	token := jwt.CreateToken(user.ID, user.Email)
+	token, err := jwt.CreateToken(user.ID, user.Email)
+	if err != nil {
+		return nil, err
+	}
 
 	return &token, nil
 }

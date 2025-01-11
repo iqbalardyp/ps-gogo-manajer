@@ -1,11 +1,11 @@
 package jwt
 
 import (
-	"errors"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/pkg/errors"
 )
 
 type JwtClaim struct {
@@ -14,7 +14,7 @@ type JwtClaim struct {
 	jwt.RegisteredClaims
 }
 
-func CreateToken(id int, email string) string {
+func CreateToken(id int, email string) (string, error) {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtClaim{
 		Id:    id,
@@ -26,10 +26,10 @@ func CreateToken(id int, email string) string {
 
 	ss, err := token.SignedString(secret)
 	if err != nil {
-		panic(err)
+		return "", errors.Wrap(err, "failed to create auth token")
 	}
 
-	return ss
+	return ss, nil
 }
 
 // jwt claim token
