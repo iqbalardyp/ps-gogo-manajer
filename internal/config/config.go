@@ -1,13 +1,15 @@
 package config
 
 import (
-	"net/http"
 	"ps-gogo-manajer/db"
 	employeeHandler "ps-gogo-manajer/internal/employee/handler"
 	employeeRepository "ps-gogo-manajer/internal/employee/repository"
 	employeeUsecase "ps-gogo-manajer/internal/employee/usecase"
+	auth "ps-gogo-manajer/internal/middleware"
 	"ps-gogo-manajer/internal/routes"
-	"ps-gogo-manajer/pkg/response"
+	userHandler "ps-gogo-manajer/internal/user/handler"
+	userRepository "ps-gogo-manajer/internal/user/repository"
+	userUsecase "ps-gogo-manajer/internal/user/usecase"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -27,10 +29,10 @@ func Bootstrap(config *BootstrapConfig) {
 	employeeRepo := employeeRepository.NewEmployeeRepository(config.DB.Pool)
 	employeeUseCase := employeeUsecase.NewEmployeeUsecase(*employeeRepo)
 	employeeHandler := employeeHandler.NewEmployeeHandler(*employeeUseCase, config.Validator)
-	routes := routes.RouteConfig{
-		App:             config.App,
-		EmployeeHandler: employeeHandler,
-	}
+
+	userRepo := userRepository.NewUserRepository(config.DB.Pool)
+	userUseCase := userUsecase.NewUserUseCase(*userRepo)
+	userHandler := userHandler.NewUserHandler(*userUseCase, config.Validator)
 
 	// * Middleware
 	config.App.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
@@ -38,14 +40,14 @@ func Bootstrap(config *BootstrapConfig) {
 		ErrorMessage: "Timeout",
 		Timeout:      30 * time.Second,
 	}))
+	authMiddleware := auth.Auth()
 
-	// Health check
-	config.App.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, response.BaseResponse{
-			Status:  "Ok",
-			Message: "",
-		})
-	})
+	routes := routes.RouteConfig{
+		App:             config.App,
+		EmployeeHandler: employeeHandler,
+		UserHandler:     userHandler,
+		AuthMiddleware:  authMiddleware,
+	}
 
 	routes.SetupRoutes()
 }
