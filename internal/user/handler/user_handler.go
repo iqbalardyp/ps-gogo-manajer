@@ -59,6 +59,7 @@ func (c *UserHandler) AuthenticateUser(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(statusCode, &dto.AuthResponse{
+		Email:       request.Email,
 		AccessToken: *token,
 	})
 }

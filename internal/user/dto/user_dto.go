@@ -7,6 +7,7 @@ type AuthRequest struct {
 }
 
 type AuthResponse struct {
+	Email       string `json:"email"`
 	AccessToken string `json:"token"`
 }
 
