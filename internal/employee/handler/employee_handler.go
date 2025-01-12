@@ -38,6 +38,13 @@ func (h EmployeeHandler) CreateEmployee(ctx echo.Context) error {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
+	parsedUri, isValid := customValidators.ParseURI(payload.EmployeeImageUri)
+	if !isValid {
+		err := errors.Wrap(customErrors.ErrBadRequest, "invalid uri")
+		return ctx.JSON(response.WriteErrorResponse(err))
+	}
+	payload.EmployeeImageUri = parsedUri
+
 	if err := h.validator.Struct(payload); err != nil {
 		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
@@ -112,6 +119,15 @@ func (h EmployeeHandler) UpdateEmployee(ctx echo.Context) error {
 	if err := h.validator.Struct(payload); err != nil {
 		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
+	}
+
+	if payload.EmployeeImageUri != "" {
+		parsedUri, isValid := customValidators.ParseURI(payload.EmployeeImageUri)
+		if !isValid {
+			err := errors.Wrap(customErrors.ErrBadRequest, "invalid uri")
+			return ctx.JSON(response.WriteErrorResponse(err))
+		}
+		payload.EmployeeImageUri = parsedUri
 	}
 
 	userData := ctx.Get("user").(*jwt.JwtClaim)

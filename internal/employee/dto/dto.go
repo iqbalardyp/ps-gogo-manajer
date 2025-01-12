@@ -30,15 +30,15 @@ type CreateEmployeePayload struct {
 	Name             string `json:"name" validate:"required,min=4,max=33"`
 	Gender           Gender `json:"gender" validate:"required,oneof=male female"`
 	DepartmentId     string `json:"departmentId" validate:"required,number"`
-	EmployeeImageUri string `json:"employeeImageUri" validate:"omitempty,required,uri"`
+	EmployeeImageUri string `json:"employeeImageUri" validate:"required"`
 }
 
 type PatchEmployeePayload struct {
-	IdentityNumber   string `json:"identityNumber" validate:"omitempty,min=5,max=33"`
-	Name             string `json:"name" validate:"omitempty,min=4,max=33"`
-	Gender           Gender `json:"gender" validate:"omitempty,oneof=male female"`
-	DepartmentId     string `json:"departmentId" validate:"omitempty,number"`
-	EmployeeImageUri string `json:"employeeImageUri" validate:"omitempty,uri"`
+	IdentityNumber   string `json:"identityNumber" validate:"required,omitempty,min=5,max=33"`
+	Name             string `json:"name" validate:"required,omitempty,min=4,max=33"`
+	Gender           Gender `json:"gender" validate:"required,omitempty,oneof=male female"`
+	DepartmentId     string `json:"departmentId" validate:"required,omitempty,number"`
+	EmployeeImageUri string `json:"employeeImageUri" validate:"required,omitempty"`
 }
 
 type UpdateDeletePathParam struct {
