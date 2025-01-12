@@ -6,6 +6,7 @@ import (
 	"ps-gogo-manajer/internal/user/dto"
 	"ps-gogo-manajer/internal/user/usecase"
 	customErrors "ps-gogo-manajer/pkg/custom-errors"
+	customValidators "ps-gogo-manajer/pkg/custom-validators"
 	"ps-gogo-manajer/pkg/helper"
 	"ps-gogo-manajer/pkg/jwt"
 	"ps-gogo-manajer/pkg/response"
@@ -92,6 +93,24 @@ func (c *UserHandler) UpdateUser(ctx echo.Context) error {
 	if err := c.Validate.Struct(request); err != nil {
 		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
+	}
+
+	if request.UserImageUri != nil {
+		parsedImgUri, isValid := customValidators.ParseURI(*request.UserImageUri)
+		if !isValid {
+			err := errors.Wrap(customErrors.ErrBadRequest, "invalid image uri")
+			return ctx.JSON(response.WriteErrorResponse(err))
+		}
+		request.UserImageUri = &parsedImgUri
+	}
+
+	if request.CompanyImageUri != nil {
+		parsedImgUri, isValid := customValidators.ParseURI(*request.CompanyImageUri)
+		if !isValid {
+			err := errors.Wrap(customErrors.ErrBadRequest, "invalid company image uri")
+			return ctx.JSON(response.WriteErrorResponse(err))
+		}
+		request.CompanyImageUri = &parsedImgUri
 	}
 
 	userData := ctx.Get("user").(*jwt.JwtClaim)
