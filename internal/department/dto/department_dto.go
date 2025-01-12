@@ -12,7 +12,7 @@ type CreateDepartmentPayload struct {
 type GetDepartmentListParams struct {
 	Limit  int
 	Offset int
-	Name   string
+	Name   string `query:"name"`
 }
 
 type PatchDepartmentPayload struct {

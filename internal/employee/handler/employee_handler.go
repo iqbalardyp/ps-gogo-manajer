@@ -59,7 +59,7 @@ func (h EmployeeHandler) GetListEmployee(ctx echo.Context) error {
 		return ctx.JSON(http.StatusOK, make([]string, 0))
 	}
 
-	departmentIDStr := ctx.QueryParam("departmentID")
+	departmentIDStr := ctx.QueryParam("departmentId")
 	departmentID, isValid := customValidators.ParseDepartmentID(departmentIDStr)
 	if !isValid {
 		return ctx.JSON(http.StatusOK, make([]string, 0))
