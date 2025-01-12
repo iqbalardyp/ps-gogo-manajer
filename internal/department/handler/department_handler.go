@@ -110,7 +110,7 @@ func (h DepartmentHandler) UpdateDepartment(ctx echo.Context) error {
 
 	id, err := strconv.Atoi(departmentId)
 	if err != nil {
-		err = errors.Wrap(customErrors.ErrNotFound, "wrong department id")
+		err = errors.Wrap(customErrors.ErrNotFound, "department id not found")
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
