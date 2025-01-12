@@ -110,7 +110,7 @@ func (h DepartmentHandler) UpdateDepartment(ctx echo.Context) error {
 
 	id, err := strconv.Atoi(departmentId)
 	if err != nil {
-		err = errors.Wrap(customErrors.ErrBadRequest, "wrong department id")
+		err = errors.Wrap(customErrors.ErrNotFound, "wrong department id")
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
@@ -135,7 +135,7 @@ func (h DepartmentHandler) DeleteDepartment(ctx echo.Context) error {
 
 	id, err := strconv.Atoi(departmentId)
 	if err != nil {
-		err = errors.Wrap(customErrors.ErrBadRequest, "wrong department id")
+		err = errors.Wrap(customErrors.ErrNotFound, "wrong department id")
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 	userData := ctx.Get("user").(*jwt.JwtClaim)

@@ -16,7 +16,7 @@ type GetDepartmentListParams struct {
 }
 
 type PatchDepartmentPayload struct {
-	Name string `json:"name" validate:"omitempty,min=4,max=33"`
+	Name string `json:"name" validate:"required,omitempty,min=4,max=33"`
 }
 
 type UpdateDeletePathParam struct {
