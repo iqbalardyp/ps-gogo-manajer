@@ -15,10 +15,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-
 type DepartmentHandler struct {
 	departmentUsecase usecase.DepartmentUsecase
-	validator *validator.Validate
+	validator         *validator.Validate
 }
 
 const (
@@ -26,14 +25,14 @@ const (
 	DEFAULT_OFFSET = 0
 )
 
-func NewDepartmentHandler(department usecase.DepartmentUsecase, validator *validator.Validate) *DepartmentHandler{
+func NewDepartmentHandler(department usecase.DepartmentUsecase, validator *validator.Validate) *DepartmentHandler {
 	return &DepartmentHandler{
 		departmentUsecase: department,
-		validator: validator,
+		validator:         validator,
 	}
 }
 
-func(h DepartmentHandler) CreateDepartment(ctx echo.Context) error{
+func (h DepartmentHandler) CreateDepartment(ctx echo.Context) error {
 	var payload dto.CreateDepartmentPayload
 
 	if err := ctx.Bind(&payload); err != nil {
@@ -48,60 +47,59 @@ func(h DepartmentHandler) CreateDepartment(ctx echo.Context) error{
 
 	userData := ctx.Get("user").(*jwt.JwtClaim)
 
-	department, err := h.departmentUsecase.CreateDepartment(ctx.Request().Context(),userData.Id,&payload)
+	department, err := h.departmentUsecase.CreateDepartment(ctx.Request().Context(), userData.Id, &payload)
 
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	return ctx.JSON(http.StatusCreated,department)
+	return ctx.JSON(http.StatusCreated, department)
 }
 
-func(h DepartmentHandler) GetListDepartment(ctx echo.Context)error{
+func (h DepartmentHandler) GetListDepartment(ctx echo.Context) error {
 
 	limitStr := ctx.QueryParam("limit")
 	offsetStr := ctx.QueryParam("offset")
 
-	limit := customValidators.ParseLimitOffset(limitStr,DEFAULT_LIMIT)
-	offset := customValidators.ParseLimitOffset(offsetStr,DEFAULT_OFFSET)
+	limit := customValidators.ParseLimitOffset(limitStr, DEFAULT_LIMIT)
+	offset := customValidators.ParseLimitOffset(offsetStr, DEFAULT_OFFSET)
 
 	payload := dto.GetDepartmentListParams{
-		Limit: limit,
+		Limit:  limit,
 		Offset: offset,
 	}
 
 	if err := ctx.Bind(&payload); err != nil {
-		err = errors.Wrap(customErrors.ErrBadRequest,err.Error())
+		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
 	userData := ctx.Get("user").(*jwt.JwtClaim)
 
-	departments, err := h.departmentUsecase.GetListDepartment(ctx.Request().Context(),userData.Id,&payload)
+	departments, err := h.departmentUsecase.GetListDepartment(ctx.Request().Context(), userData.Id, &payload)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
 	if len(*departments) == 0 {
-		return ctx.JSON(http.StatusOK, make([]string,0))
+		return ctx.JSON(http.StatusOK, make([]string, 0))
 	}
 
-	return ctx.JSON(http.StatusOK,&departments)
+	return ctx.JSON(http.StatusOK, &departments)
 }
 
-
-func (h DepartmentHandler)UpdateDepartment(ctx echo.Context) error{
+func (h DepartmentHandler) UpdateDepartment(ctx echo.Context) error {
 	departmentId := ctx.Param("departmentId")
 
 	if departmentId == "" {
-		err := errors.Wrap(customErrors.ErrBadRequest,"department id required")
+		err := errors.Wrap(customErrors.ErrBadRequest, "department id required")
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
 	var payload dto.PatchDepartmentPayload
 
-	if err := ctx.Bind(&payload); err != nil{
-		err = errors.Wrap(customErrors.ErrBadRequest,err.Error())
+	if err := ctx.Bind(&payload); err != nil {
+		err = errors.Wrap(customErrors.ErrBadRequest, err.Error())
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
@@ -111,14 +109,14 @@ func (h DepartmentHandler)UpdateDepartment(ctx echo.Context) error{
 	}
 
 	id, err := strconv.Atoi(departmentId)
-    if err != nil {
-		err = errors.Wrap(customErrors.ErrBadRequest,"wrong department id")
+	if err != nil {
+		err = errors.Wrap(customErrors.ErrNotFound, "department id not found")
 		return ctx.JSON(response.WriteErrorResponse(err))
-    }
+	}
 
 	userData := ctx.Get("user").(*jwt.JwtClaim)
 
-	department,err := h.departmentUsecase.UpdateDepartment(ctx.Request().Context(),userData.Id,id,&payload)
+	department, err := h.departmentUsecase.UpdateDepartment(ctx.Request().Context(), userData.Id, id, &payload)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
@@ -126,27 +124,29 @@ func (h DepartmentHandler)UpdateDepartment(ctx echo.Context) error{
 	return ctx.JSON(http.StatusOK, department)
 }
 
-
-func (h DepartmentHandler) DeleteDepartment (ctx echo.Context) error {
+func (h DepartmentHandler) DeleteDepartment(ctx echo.Context) error {
 
 	departmentId := ctx.Param("departmentId")
 
 	if departmentId == "" {
-		err := errors.Wrap(customErrors.ErrBadRequest,"department id required")
+		err := errors.Wrap(customErrors.ErrBadRequest, "department id required")
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
 	id, err := strconv.Atoi(departmentId)
-    if err != nil {
-		err = errors.Wrap(customErrors.ErrBadRequest,"wrong department id")
+	if err != nil {
+		err = errors.Wrap(customErrors.ErrNotFound, "wrong department id")
 		return ctx.JSON(response.WriteErrorResponse(err))
-    }
+	}
 	userData := ctx.Get("user").(*jwt.JwtClaim)
 
-	h.departmentUsecase.DeleteDepartment(ctx.Request().Context(), userData.Id,id)
+	err = h.departmentUsecase.DeleteDepartment(ctx.Request().Context(), userData.Id, id)
+	if err != nil {
+		return ctx.JSON(response.WriteErrorResponse(err))
+	}
 
-	return ctx.JSON(http.StatusOK,response.BaseResponse{
-		Status: http.StatusText(http.StatusOK),
+	return ctx.JSON(http.StatusOK, response.BaseResponse{
+		Status:  http.StatusText(http.StatusOK),
 		Message: "deleted",
 	})
 

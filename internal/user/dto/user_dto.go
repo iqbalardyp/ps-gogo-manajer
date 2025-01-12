@@ -20,9 +20,9 @@ type UserResponse struct {
 }
 
 type UpdateUserRequest struct {
-	Email           *string `json:"email" validate:"omitempty,email,min=1,max=255"`
-	Username        *string `json:"name" validate:"omitempty,min=4,max=52"`
-	UserImageUri    *string `json:"userImageUri" validate:"omitempty,uri"`
-	CompanyName     *string `json:"companyName" validate:"omitempty,min=4,max=52"`
-	CompanyImageUri *string `json:"companyImageUri" validate:"omitempty,uri"`
+	Email           *string `json:"email" validate:"required,email,min=1,max=255"`
+	Username        *string `json:"name" validate:"required,min=4,max=52"`
+	UserImageUri    *string `json:"userImageUri" validate:"required"`
+	CompanyName     *string `json:"companyName" validate:"required,min=4,max=52"`
+	CompanyImageUri *string `json:"companyImageUri" validate:"required"`
 }

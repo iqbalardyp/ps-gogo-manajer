@@ -12,11 +12,11 @@ type CreateDepartmentPayload struct {
 type GetDepartmentListParams struct {
 	Limit  int
 	Offset int
-	Name   string
+	Name   string `query:"name"`
 }
 
 type PatchDepartmentPayload struct {
-	Name string `json:"name" validate:"omitempty,min=4,max=33"`
+	Name string `json:"name" validate:"required,omitempty,min=4,max=33"`
 }
 
 type UpdateDeletePathParam struct {

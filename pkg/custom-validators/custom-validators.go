@@ -1,7 +1,9 @@
 package customValidators
 
 import (
+	"net/url"
 	"strconv"
+	"strings"
 )
 
 var validGender = map[string]bool{
@@ -45,4 +47,43 @@ func ParseDepartmentID(id string) (int, bool) {
 	}
 
 	return departmentID, true
+}
+
+func ParseURI(uri string) (string, bool) {
+	// Check for empty string
+	if strings.TrimSpace(uri) == "" {
+		return "", false
+	}
+
+	// Parse the URI
+	parsedURL, err := url.Parse(uri)
+	if err != nil {
+		return "", false
+	}
+
+	// Check if scheme is present and valid
+	if parsedURL.Scheme == "" {
+		return "", false
+	}
+
+	// Validate host presence for network-based URIs
+	if parsedURL.Scheme != "file" && parsedURL.Host == "" {
+		return "", false
+	}
+
+	// Additional validation for specific schemes
+	switch parsedURL.Scheme {
+	case "http", "https":
+		// For HTTP(S), ensure there's a valid host
+		if !strings.Contains(parsedURL.Host, ".") && parsedURL.Host != "localhost" {
+			return "", false
+		}
+	case "file":
+		// For file scheme, ensure there's a path
+		if parsedURL.Path == "" {
+			return "", false
+		}
+	}
+
+	return uri, true
 }

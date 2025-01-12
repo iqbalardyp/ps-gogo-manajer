@@ -2,10 +2,10 @@ package routes
 
 import (
 	"net/http"
+	departmentHandler "ps-gogo-manajer/internal/department/handler"
 	employeeHandler "ps-gogo-manajer/internal/employee/handler"
 	fileHandler "ps-gogo-manajer/internal/files/handler"
 	userHandler "ps-gogo-manajer/internal/user/handler"
-	departmentHandler "ps-gogo-manajer/internal/department/handler"
 	"ps-gogo-manajer/pkg/response"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -14,12 +14,12 @@ import (
 )
 
 type RouteConfig struct {
-	App             *echo.Echo
-	S3Client        *s3.Client
-	FileHandler     *fileHandler.FileHandler
-	EmployeeHandler *employeeHandler.EmployeeHandler
-	UserHandler     *userHandler.UserHandler
-	AuthMiddleware  echo.MiddlewareFunc
+	App               *echo.Echo
+	S3Client          *s3.Client
+	FileHandler       *fileHandler.FileHandler
+	EmployeeHandler   *employeeHandler.EmployeeHandler
+	UserHandler       *userHandler.UserHandler
+	AuthMiddleware    echo.MiddlewareFunc
 	DepartmentHandler *departmentHandler.DepartmentHandler
 }
 
@@ -65,11 +65,11 @@ func (r *RouteConfig) setupFileRoutes(api *echo.Group) {
 	api.POST("/file", r.FileHandler.UploadFile, r.AuthMiddleware)
 }
 
-func (r *RouteConfig) setupDepartmentRoute(api *echo.Group){
-	department := api.Group("/department",r.AuthMiddleware)
+func (r *RouteConfig) setupDepartmentRoute(api *echo.Group) {
+	department := api.Group("/department", r.AuthMiddleware)
 
-	department.GET("",r.DepartmentHandler.GetListDepartment)
+	department.GET("", r.DepartmentHandler.GetListDepartment)
 	department.POST("", r.DepartmentHandler.CreateDepartment)
 	department.PATCH("/:departmentId", r.DepartmentHandler.UpdateDepartment)
-	department.DELETE("/:departmentId",r.DepartmentHandler.DeleteDepartment)
+	department.DELETE("/:departmentId", r.DepartmentHandler.DeleteDepartment)
 }
