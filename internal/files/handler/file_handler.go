@@ -34,13 +34,13 @@ func (c *FileHandler) UploadFile(ctx echo.Context) error {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	fileType, isValid := c.isValidFile(fileHeader)
+	fileType, isValid := c.isValidFile(fileHeader, file)
 	if !isValid {
 		err = errors.Wrap(customErrors.ErrBadRequest, "file is invalid")
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
 
-	fileResponse, err := c.Usecase.UploadFile(file, fileType)
+	fileResponse, err := c.Usecase.UploadFile(file, *fileType)
 	if err != nil {
 		return ctx.JSON(response.WriteErrorResponse(err))
 	}
@@ -48,17 +48,26 @@ func (c *FileHandler) UploadFile(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, &fileResponse)
 }
 
-func (c *FileHandler) isValidFile(fileHeader *multipart.FileHeader) (string, bool) {
-	fileType := fileHeader.Header.Get("Content-Type")
+func (c *FileHandler) isValidFile(fileHeader *multipart.FileHeader, file multipart.File) (*string, bool) {
 
 	if fileHeader.Size > 100*1024 {
-		return fileType, false
+		return nil, false
 	}
+
+	buffer := make([]byte, 512)
+	if _, err := file.Read(buffer); err != nil {
+		return nil, false
+	}
+	// Reset the read pointer of the file
+	if _, err := file.Seek(0, 0); err != nil {
+		return nil, false
+	}
+	fileType := http.DetectContentType(buffer)
 
 	switch fileType {
 	case usecase.JPEG, usecase.JPG, usecase.PNG:
-		return fileType, true
+		return &fileType, true
 	default:
-		return fileType, false
+		return nil, false
 	}
 }
